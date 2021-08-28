@@ -3,7 +3,7 @@
 This repository provides code implementations for the following papers:
 - "[An Imitation Game for Learning Semantic Parsers from User Interaction](https://arxiv.org/pdf/2005.00689.pdf)", EMNLP 2020.
 - "[Model-based Interactive Semantic Parsing:
-A Unified Framework and A Text-to-SQL Case Study](http://web.cse.ohio-state.edu/~yao.470/paper/MISP_EMNLP19.pdf)", EMNLP 2019.
+A Unified Framework and A Text-to-SQL Case Study](https://arxiv.org/pdf/1910.05389.pdf)", EMNLP 2019.
 
 If you use the data or code from this repository, please cite the papers:
 ```
@@ -36,7 +36,7 @@ Towards addressing these problems, **interactive semantic parsing** has emerged 
 In this paradigm, a semantic parser interacts with the user in multiple turns and solicits new information or help to resolve its uncertainties.
 During the interaction, the user is also able to validate the parsing processing, which increases their trust in the system.
 
-To advance this line of research, in [our EMNLP'19 paper](http://web.cse.ohio-state.edu/~yao.470/paper/MISP_EMNLP19.pdf), we proposed **Model-based Interactive Semantic Parsing (MISP)**, a unified framework that views the interactive semantic parsing problem as designing a _model-based_ intelligent agent. 
+To advance this line of research, in [our EMNLP'19 paper](https://arxiv.org/pdf/1910.05389.pdf), we proposed **Model-based Interactive Semantic Parsing (MISP)**, a unified framework that views the interactive semantic parsing problem as designing a _model-based_ intelligent agent. 
 The following figures show an overview of MISP (left) and its instantiation **MISP-SQL** for text-to-SQL parsing (right).
 
 <p align="center">
