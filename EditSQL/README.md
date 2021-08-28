@@ -46,7 +46,7 @@ Please cite the following papers if you use the code:
 
 
 ### Data
-We have the pre-processed and cleaned [Spider data](https://yale-lily.github.io/spider) available: [data_clean.tar](https://www.dropbox.com/s/tmj4qnzemxvi5bo/data_clean.tar?dl=0).
+We have the pre-processed and cleaned [Spider data](https://yale-lily.github.io/spider) available: [data_clean.tar](https://buckeyemailosu-my.sharepoint.com/:u:/g/personal/chen_8336_buckeyemail_osu_edu/EbCsSRb8MKVNiVktVsze5GMBxp9TccTRSjZpT-VYB6tNpg?e=7ilzZW).
 Please download and uncompress it via `tar -xvf data_clean.tar` as a folder `EditSQL/data_clean`. 
 Note that the training set has been cleaned with its size reduced (see [our paper](https://arxiv.org/pdf/2005.00689.pdf), Appendix B.3 for details).
 
@@ -92,7 +92,7 @@ When the training is finished, please rename and move the best model checkpoint 
 to `EditSQL/logs_clean/logs_spider_editsql_10p/model_best.pt`.
 
 #### 4.1.2 Use our pretrained checkpoint
-You can also use our pretrained checkpoint: [logs_clean.tar](https://www.dropbox.com/s/4n6dg0xcru91smu/logs_clean.tar?dl=0).
+You can also use our pretrained checkpoint: [logs_clean.tar](https://buckeyemailosu-my.sharepoint.com/:u:/g/personal/chen_8336_buckeyemail_osu_edu/EQmsNq-xPpBJk7iBURgT1o4BzuFX5S329AfcWU9SEMzRGQ?e=CPUNu5).
 Please download and uncompress the content as `EditSQL/logs_clean/ogs_spider_editsql_10p/model_best.pt`.
 
 
