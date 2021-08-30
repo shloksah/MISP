@@ -33,7 +33,7 @@ dependencies:
   - ncurses=6.1=he6710b0_1
   - ninja=1.9.0=py37hfd86e86_0
   - olefile=0.46=py37_0
-  - openssl=1.1.1=h7b6447c_0
+  - openssl=1.1.1h=h7b6447c_0
   - parso=0.5.1=py_0
   - pexpect=4.7.0=py37_0
   - pillow=6.1.0=py37h34e0f95_0
