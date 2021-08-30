@@ -44,8 +44,7 @@ Please cite the following papers if you use the code:
  `SQLova_model/download/bert/pytorch_model_uncased_L-12_H-768_A-12.bin`.
 
 ### Data
-We have the pre-processed [WikiSQL data](https://github.com/salesforce/WikiSQL) available: [data.tar](https://www.dropbox.com/s/younbzsa0t6wzan/data.tar?dl=0).
-Please download and uncompress it via `tar -xvf data.tar` as a folder `SQLova_model/download/data`.
+We have the pre-processed [WikiSQL data](https://github.com/salesforce/WikiSQL) available: [data.tar](https://buckeyemailosu-my.sharepoint.com/:u:/g/personal/chen_8336_buckeyemail_osu_edu/EU830MxSHp5LqJix8Am5znMBTe-RiKYi-9XB0UgMyqpOzA?e=yiGyik). Please download and uncompress it via `tar -xvf data.tar` as a folder `SQLova_model/download/data`.
 
 If you would like to preprocess the WikiSQL data (or your own data) from scratch, please follow the [`data_preprocess.sh`](../scripts/sqlova/data_preprocess.sh) script.
 
@@ -94,8 +93,7 @@ bash scripts/sqlova/pretrain.sh
 ```
 
 #### 4.1.2 Use our pretrained checkpoints
-You can also use our pretrained checkpoints: [initialization_checkpoints_folder.tar](https://www.dropbox.com/s/rcmz56h0803sz8g/initialization_checkpoints_folder.tar?dl=0). 
-Please download and uncompress the folder via `tar -xvf initialization_checkpoints_folder.tar` and place the content as:
+You can also use our pretrained checkpoints: [initialization_checkpoints_folder.tar](https://buckeyemailosu-my.sharepoint.com/:u:/g/personal/chen_8336_buckeyemail_osu_edu/EcaWjAIgpOJGhpRG0Lh_nW0BW-CicnjLhAX4gNgCSPGzXQ?e=qx9HA4). Please download and uncompress the folder via `tar -xvf initialization_checkpoints_folder.tar` and place the content as:
 ```
 |- SQLova_model
 |   |-- checkpoints_onlint_pretrain_1p

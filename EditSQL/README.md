@@ -40,9 +40,12 @@ Please cite the following papers if you use the code:
     ```
     conda env create -f gpu-py3.yml
     ```
-- Download the Glove word embedding from [here](https://nlp.stanford.edu/projects/glove/) and put it as `EditSQL/word_emb/glove.840B.300d.txt`.
+- Download the Glove word embedding from [here](https://nlp.stanford.edu/data/glove.840B.300d.zip) \(use `wget` for command line\) and put it as `EditSQL/word_emb/glove.840B.300d.txt`.
 
-- Download Pretrained BERT model from [here](https://drive.google.com/file/d/1f_LEWVgrtZLRuoiExJa5fNzTS8-WcAX9/view?usp=sharing) as `EditSQL/model/bert/data/annotated_wikisql_and_PyTorch_bert_param/pytorch_model_uncased_L-12_H-768_A-12.bin`
+- Download Pretrained BERT model from [here](https://drive.google.com/file/d/1f_LEWVgrtZLRuoiExJa5fNzTS8-WcAX9/view?usp=sharing) as `EditSQL/model/bert/data/annotated_wikisql_and_PyTorch_bert_param/pytorch_model_uncased_L-12_H-768_A-12.bin`. If using command line: 
+```
+gdown https://drive.google.com/u/0/uc?id=1f_LEWVgrtZLRuoiExJa5fNzTS8-WcAX9
+```
 
 
 ### Data
