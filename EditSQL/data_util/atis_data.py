@@ -11,8 +11,8 @@ from .interaction import load_function
 from .entities import NLtoSQLDict
 from .atis_vocab import ATISVocabulary
 
-ENTITIES_FILENAME = 'EditSQL/data/entities.txt'
-ANONYMIZATION_FILENAME = 'EditSQL/data/anonymization.txt'
+ENTITIES_FILENAME = 'EditSQL/data_clean/entities.txt'
+ANONYMIZATION_FILENAME = 'EditSQL/data_clean/anonymization.txt'
 
 class ATISDataset():
     """ Contains the ATIS data. """

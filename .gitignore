@@ -4,3 +4,11 @@ __pycache__/*
 *.DS_Store
 EditSQL/model/bert/data/annotated_wikisql_and_PyTorch_bert_param/pytorch_model_uncased_L-12_H-768_A-12.bin
 EditSQL/word_emb/glove.840B.300d.txt
+EditSQL/data_clean/
+EditSQL/logs_clean/logs_spider_editsql_10p/
+SQLova_model/logs/
+SQLova_model/download/data/
+SQLova_model/download/bert/pytorch_model_uncased_L-12_H-768_A-12.bin
+SQLova_model/checkpoints_online_pretrain_10p
+SQLova_model/checkpoints_online_pretrain_1p
+SQLova_model/checkpoints_online_pretrain_5p
