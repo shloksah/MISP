@@ -1,9 +1,10 @@
-#! /bin/bash
+#!/bin/bash
 
-source activate gpu-py3
+activate gpu-py3
 export CUDA_VISIBLE_DEVICES=0
 
-SETTING="online_pretrain_10p" # online_pretrain_10p, full_train
+SETTING="online_pretrain_10p" 
+# online_pretrain_10p, full_train
 if [ ${SETTING} == "full_train" ]
 then
   LOGDIR="EditSQL/logs_clean/logs_spider_editsql"

@@ -83,7 +83,7 @@ dependencies:
     - prettytable==0.7.2
     - progressbar==2.5
     - prompt-toolkit==3.0.2
-    - psutil==5.6.2
+    #- psutil==5.6.2
     - ptyprocess==0.6.0
     - pygments==2.5.2
     - pymongo==3.9.0
