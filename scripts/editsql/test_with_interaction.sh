@@ -49,4 +49,4 @@ python3 interaction_editsql.py \
       --num_options=${NUM_OP} --err_detector=${ED} --friendly_agent=0 --user="sim" \
       --setting=${SETTING} --ask_structure=1 \
       --output_path ${LOGDIR}/records_${OUTPUT_PATH}.json \
-      > ${LOGDIR}/records_${OUTPUT_PATH}.output 2>&1 &
+      > ${LOGDIR}/records_${OUTPUT_PATH}.output 2>&1

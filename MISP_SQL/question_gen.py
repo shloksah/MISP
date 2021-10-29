@@ -1,5 +1,6 @@
 # question generator
 from .utils import *
+import re
 
 
 class QuestionGenerator:
@@ -53,9 +54,9 @@ class QuestionGenerator:
             tab_descrip = ""
             if bool_having:
                 tab_descrip += " in each group"
-
+            #Removing colors
             if tab_name is not None:
-                tab_descrip += " in the table " + bcolors.YELLOW + "\"" + tab_name + "\"" + bcolors.ENDC
+                tab_descrip += " in the table " + tab_name
 
             return agg_descrip + tab_descrip
         else:
@@ -65,12 +66,12 @@ class QuestionGenerator:
             elif agg is not None:
                 agg_descrip = self.agg_regular[agg] + " "
 
-            col_descrip = "the table attribute " + bcolors.BLUE + "\"" + col_name + "\"" + bcolors.ENDC
+            col_descrip = "the table attribute " + col_name 
 
             tab_descrip = " in the table"
             if tab_name is not None:
-                tab_descrip += " " + bcolors.YELLOW + "\"" + tab_name + "\"" + bcolors.ENDC
-
+                tab_descrip += " " + tab_name
+            print(agg_descrip + col_descrip + tab_descrip)
             return agg_descrip + col_descrip + tab_descrip
 
     def group_by_agg_col_tab_description(self, col_name, tab_name):
@@ -590,7 +591,10 @@ class QuestionGenerator:
         semantic_tag = old_tag_seq[pointer][0]
         cheat_sheet = {}
         prefix, option_text = "", ""
-
+        print('cand_semantic_units-->',repr(cand_semantic_units))
+        print('old_tag_seq-->',repr(old_tag_seq))
+        print('pointer-->',repr(pointer))
+        
         if semantic_tag == SELECT_COL:
             prefix = "Please select any options from the following list that the system needs to return information about:\n"
             for idx, su in enumerate(cand_semantic_units):
@@ -625,7 +629,7 @@ class QuestionGenerator:
             prefix = "Please select any options from the following list that the system needs to consider conditions about:\n"
             for idx, su in enumerate(cand_semantic_units):
                 tab_col_item = su[1]
-                option_text += "(%d) %s;\n" % (idx + 1, self.agg_col_tab_description(tab_col_item[1], tab_col_item[0]))
+                option_text += "(%d) %s;\n" % (idx + 1, clean_words(self.agg_col_tab_description(tab_col_item[1], tab_col_item[0])))
                 cheat_sheet[idx + 1] = tab_col_item[-1] # col id
 
         elif semantic_tag == WHERE_OP:
@@ -807,3 +811,7 @@ class QuestionGenerator:
         else:
             question = prefix + option_text.strip()
             return question, cheat_sheet, -1
+
+def clean_words(words):
+    word=re.sub('[^a-zA-Z]+',' ',str(words))
+    return word
