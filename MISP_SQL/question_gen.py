@@ -37,6 +37,14 @@ class QuestionGenerator:
                                ("asc", True): "in ascending order and limited to top N"}
 
     def agg_col_tab_description(self, col_name, tab_name, agg=None, bool_having=False, bool_distinct=False):
+        """
+        Creates a description for the aggregation preformed on a attribute for a table.
+        :param col_name: The attribute of the items to consider for agg. type: str
+        :param tab_name: The table to take items from. type: str
+        :param agg: The type of aggregation to preform. type: ("avg", "count", "sum", "min", "max") -> str
+        :param bool_having: If the table is made up of groups. type: bool
+        :param bool_distinct: If the items should be distinct or not. type: bool
+        """
         if agg is not None:
             agg = agg.lower()
 
@@ -74,6 +82,11 @@ class QuestionGenerator:
             return agg_descrip + col_descrip + tab_descrip
 
     def group_by_agg_col_tab_description(self, col_name, tab_name):
+        """
+        Creates a description for a group in a table of the aggregation of an attribute. 
+        :param col_name: The attribute of the items to consider for agg. type: str
+        :param tab_name: The table to take items from. type: str
+        """
         if tab_name is None:
             return "items based on the table attribute " + bcolors.BLUE + "\"" + col_name + "\"" + bcolors.ENDC
         else:
@@ -81,9 +94,21 @@ class QuestionGenerator:
                    " based on the table attribute " + bcolors.BLUE + "\"" + col_name + "\"" + bcolors.ENDC
 
     def select_col_question(self, col_name, tab_name):
+        """
+        Asks for clarification about the table and attributes. 
+        :param col_name: The attribute of the items to consider for agg. type: str
+        :param tab_name: The table to take items from. type: str
+        """
         return "Does the system need to return any information about %s?" % self.agg_col_tab_description(col_name, tab_name)
 
     def select_agg_question(self, col_name, tab_name, src_agg, bool_distinct=False):
+        """
+        Asks for clarification about the aggregation. 
+        :param col_name: The attribute of the items to consider for agg. type: str
+        :param tab_name: The table to take items from. type: str
+        :param src_agg: The original aggregation performed. type: ("avg", "count", "sum", "min", "max") -> str
+        :param bool_distinct: If the table members should be distinct or not. type: bool
+        """
         if src_agg == "none_agg":
             return "Does the system need to return the value of %s?" % self.agg_col_tab_description(col_name, tab_name)
         else:
@@ -92,10 +117,20 @@ class QuestionGenerator:
                 col_name, tab_name, agg=src_agg, bool_distinct=bool_distinct)
 
     def where_col_question(self, col_name, tab_name):
+        """
+        Asks for new conditions for the attribute and table.
+        :param col_name: The attribute of the items to consider for agg. type: str
+        :param tab_name: The table to take items from. type: str
+        """
         return "Does the system need to consider any specific conditions about %s?" %\
                self.agg_col_tab_description(col_name, tab_name)
 
     def andor_question(self, and_or, selected_cols_info): # deprecated
+        """
+        Asks if the attribute data is synced or not.
+        :param and_or: String representing either and or or. type: str
+        :param selected_cols_info: Information related to the selected attributes. type: str
+        """
         if and_or == "and":
             return "Do the conditions about %s hold at the same time?" % selected_cols_info
         elif and_or == "or":
@@ -104,6 +139,11 @@ class QuestionGenerator:
             raise ValueError("Invalid and_or=%s!" % and_or)
 
     def where_op_question(self, agg_col_tab_name, op_name):
+        """
+        Asks if the the resulting agg_col_tab_name should have a condition applied to it.
+        :param agg_col_tab_name: The value of a aggregation on an attribute of a table. type: str
+        :param op_name: The operation that represents the condition. type: (like, not in, >, <, =, >=, <=, !=, in, between) -> str
+        """
         value_descrip = "patterns" if op_name == "like" else "values"
         return "The system is enforcing the condition that in the results, %s must %s some specific %s. " % (
             agg_col_tab_name, self.where_op[op_name], value_descrip) + "Is the condition correct?"
@@ -111,6 +151,18 @@ class QuestionGenerator:
     def root_terminal_question(self, col_name, tab_name, op_name, root_or_terminal,
                                bool_having=False, agg=None, group_by_col_info=None,
                                bool_distinct=False):
+        """
+        Confirms with the user that a specific condition over an atribute of a table
+        or group of tables is correct.
+        :param col_name: The attribute the condition will apply to. type: str
+        :param tab_name: The name of the table that the condition will apply to. type: str
+        :param op_name: The name of the operation of the condition. type: (like, not in, >, <, =, >=, <=, !=, in, between) -> str
+        :param root_or_terminal: Values VS. Literal values respectivly. type: (root, terminal) -> str 
+        :param bool_having: If the table is made up of groups. type: bool 
+        :param agg: The type of aggregation to preform. type: ("avg", "count", "sum", "min", "max") -> str
+        :param group_by_col_info: If the values should be grouped by attribute information. type: bool
+        :param bool_distinct: If the items should be distinct or not. type: bool
+        """
         root_term_description = self.root_terminal_description(col_name, tab_name, op_name, root_or_terminal,
                                                                bool_having=bool_having, agg=agg,
                                                                bool_distinct=bool_distinct)
@@ -129,7 +181,16 @@ class QuestionGenerator:
                                   bool_having=False, agg=None, bool_distinct=False):
         agg_col_tab_name = self.agg_col_tab_description(col_name, tab_name, agg=agg, bool_having=bool_having,
                                                         bool_distinct=bool_distinct)
-
+        """
+        Generates a description of what conditions will be applied to attribute and table.
+        :param col_name: The attribute the condition will apply to. type: str
+        :param tab_name: The name of the table that the condition will apply to. type: str
+        :param op_name: The name of the operation of the condition. type: (like, not in, >, <, =, >=, <=, !=, in, between) -> str
+        :param root_or_terminal: Values VS. Literal values respectivly. type: (root, terminal) -> str 
+        :param bool_having: If the table is made up of groups. type: bool 
+        :param agg: The type of aggregation to preform. type: ("avg", "count", "sum", "min", "max") -> str
+        :param bool_distinct: If the items should be distinct or not. type: bool
+        """
         if root_or_terminal == "terminal":
             if op_name in {"in", "not in"}:
                 value_descrip = "a set of given literal values (e.g., number 5, string \"France\")"
@@ -149,19 +210,42 @@ class QuestionGenerator:
         return description
 
     def where_val_question(self, col_name, tab_name, op_name, val_str):
+        """
+        Confirms with user that a attribute must be conditionally bound by a value/literal.
+        :param col_name: The attribute of the items. type: str
+        :param tab_name: The table to take items from. type: str
+        :param op_name: The condition that is bounding the value/literal. type: (like, not in, >, <, =, >=, <=, !=, in, between) -> str
+        :param val_str: The value that is binding the arrtibute. type: str
+        """
         return "The system is enforcing the condition that in the results, %s must %s %s. " % (
             self.agg_col_tab_description(col_name, tab_name), self.where_op[op_name], val_str) + \
                "Is the condition correct?"
 
     def group_col_question(self, col_name, tab_name):
+        """
+        Confirms with the user if attributes need to be grouped.
+        :param col_name: The attribute that may need grouping. type: str
+        :param tab_name: The table the attribute comes from. type: str
+        """
         assert tab_name is not None
         return "Does the system need to group %s?" % self.group_by_agg_col_tab_description(col_name, tab_name)
 
     def group_none_having_question(self, group_by_cols_info): # deprecated
+        """
+        Confirming that we want to group without any other conditions.
+        :param group_by_cols_info: How the attributes are grouped. type: str
+        """
         return "The system decides to group %s, but " % group_by_cols_info + bcolors.UNDERLINE + "without" + bcolors.ENDC + \
                " considering any other conditions. Is this correct?"
 
     def have_col_question(self, group_by_cols_info, col_name, tab_name):
+        """
+        Asks user if they want to add conditions to a different set of attributes. Adds that the 
+        table is grouped in some way. AKA Having = True.
+        :param group_by_cols_info: The info about the conditions on the first set of attributes. type: str
+        :param col_name: The attributes to add a condition to. type: str
+        :param tab_name: The table the attributes are from. type: str
+        """
         question = "The system will first group %s. " \
                    "Does it need to consider any specific conditions about %s?" % (
             group_by_cols_info, self.agg_col_tab_description(col_name, tab_name, bool_having=True))
@@ -169,6 +253,15 @@ class QuestionGenerator:
         return question
 
     def have_agg_question(self, group_by_cols_info, col_name, tab_name, src_agg, bool_distinct=False):
+        """
+        Asks user if they want to add conditions to a different set of aggregations. Adds that the 
+        table is grouped in some way. AKA Having = True.
+        :param group_by_cols_info: The info of how we are grouping previous attributes. type: str
+        :param col_name: The attributes that agg will effect. type: src
+        :param tab_name: The table that the attributes are from. type: src
+        :param src_agg: The aggregation that will be applied to the attributes. type: ("avg", "count", "sum", "min", "max") -> str
+        :param bool_distinct: TODO *** NOT NEEDED, UNUSED ***
+        """
         src_agg = src_agg.lower()
         if src_agg == "none_agg":
             question = "The system will first group %s. " \
@@ -185,6 +278,16 @@ class QuestionGenerator:
         return question
 
     def have_op_question(self, group_by_cols_info, col_name, tab_name, op_name, agg=None, bool_distinct=False):
+        """
+        Asks the user if some condition needs to be enforced onto the results of agg. Adds that the 
+        table is grouped in some way. AKA Having = True.
+        :param group_by_cols_info: The info of how we are grouping previous attributes. type: str
+        :param col_name: The attributes being affected by agg. type: src
+        :param tab_name: The table the attributes are from. type: src
+        :param op_name: The operation that will be used on the results of agg. type: (like, not in, >, <, =, >=, <=, !=, in, between) -> str
+        :param agg: The aggregation used on the attributes. type: ("avg", "count", "sum", "min", "max") -> str
+        :param bool_distinct: If the groups/attributes should be distinct. type: bool
+        """
         value_descrip = "patterns" if op_name == "like" else "values"
         question = "The system will first group %s. " \
                    "Does it need to enforce the condition that in the results, " \
@@ -196,10 +299,22 @@ class QuestionGenerator:
         return question
 
     def order_col_question(self, col_name, tab_name):
+        """
+        Asks the user if the data should be ordred in a specific way.
+        :param: col_name: The attributes to order. type: str
+        :param: tab_name: The table of the attributes. type: str
+        """
         return "Does the system need to order (in ascending or descending order) " \
                "the results based on %s?" % self.agg_col_tab_description(col_name, tab_name)
 
     def order_agg_question(self, col_name, tab_name, src_agg, bool_distinct=False):
+        """
+        Asks the user if the reuslts of a aggregation should be sorted in a particular order.
+        :param col_name: The attributes the aggregation is performed on. type: str
+        :param tab_name: The table the attributes come from. type: str
+        :param src_agg: The aggregation to apply to the attributes. type: (like, not in, >, <, =, >=, <=, !=, in, between) -> str
+        :param bool_distinct: I the results should be distinct or not: type: bool
+        """
         src_agg = src_agg.lower()
         if src_agg == "none_agg":
             return "Does the system need to order (in ascending or descending order) " \
@@ -211,12 +326,27 @@ class QuestionGenerator:
                                                                              bool_distinct=bool_distinct)
 
     def order_desc_asc_limit_question(self, col_name, tab_name, desc_asc_limit, agg=None):
+        """
+        Asks the user if there should be a limit of how many results there are from the sorting.
+        :param col_name: The attributes that aggregation is applied to. type: str
+        :param tab_name: The table the attributes come from. type: str
+        :param desc_asc_limit: The limit that it should be stoped at. type: ((desc, FALSE),(asc, FALSE),(desc, TRUE),(asc, TRUE)) -> tupple
+        :param agg: The aggregation to be performed on the attributes. type: (like, not in, >, <, =, >=, <=, !=, in, between) -> str
+        """
         return "Assume that the system will sort the results based on %s. \n" \
                "\tIf this assumption is true, do the results need to be %s? \n" \
                "\tIf you think this assumption is incorrect, please select the 'No' option." % (
             self.agg_col_tab_description(col_name, tab_name, agg=agg), self.desc_asc_limit[desc_asc_limit])
 
     def order_desc_asc_question(self, col_name, tab_name, desc_asc, agg=None, bool_distinct=False):
+        """
+        Asks the user if the items should be sorted in a paricular way.
+        :param col_name: The attributes that are aggregated on. type: str
+        :param tab_name: The table of the attributes. type: str
+        :param desc_asc: The way the aggregation is sorted. type: (desc, asc) -> str
+        :param agg: The aggregtion used. type: (like, not in, >, <, =, >=, <=, !=, in, between) -> str
+        :param bool_distinct: If the groups are distinct. type: bool
+        """
         return "Assume that the system will sort the results based on %s. \n" \
                "\tIf this assumption is true, do the results need to be %s? \n" \
                "\tIf you think this assumption is incorrect, please select the 'No' option." % (
@@ -224,12 +354,23 @@ class QuestionGenerator:
                    self.desc_asc_limit[(desc_asc, False)])
 
     def order_limit_question(self, col_name, tab_name, agg=None, bool_distinct=False):
+        """
+        Asks the user if the sorted set should be limited to the top results.
+        :param col_name: The attributes affected by the aggregation. type: str
+        :param tab_name: The table the attributes are from. type: str
+        :param agg: The aggregation applied to the attributes. type: str
+        :param bool_distinct: If the groups are distinct. type: bool
+        """
         return "Assume that the system will sort the results based on %s (in ascending or descending order). \n" \
                "\tIf this assumption is true, do the results need to be limited to top N? \n" \
                "\tIf you think this assumption is incorrect, please select the 'No' option." % (
             self.agg_col_tab_description(col_name, tab_name, agg=agg, bool_distinct=bool_distinct))
 
     def iuen_question(self, iuen):
+        """
+        Asks user if it needs to merge/compare different groups.
+        :param iuen: How it should compare the groups. type: (except, union, intersect, ?) -> str
+        """
         if iuen == "except":
             return "Does the system need to return information satisfying some cases BUT NOT others?\n" \
                    "e.g., Find all airlines that have flights from airport 'CVO' BUT NOT from 'APG'."
@@ -253,6 +394,15 @@ class QuestionGenerator:
 
     def where_having_nested_question(self, col_name, tab_name, op_name, right_question, agg=None, bool_having=False,
                                      bool_distinct=False):
+        """
+        Calculates the updated values using root_terminal and displays the corected description.
+        :param col_name: The attributes affected by the aggregation. type: str
+        :param tab_name: The table the attributes are from. type: str
+        :param op_name: The operation that represents the condition. type: (like, not in, >, <, =, >=, <=, !=, in, between) -> str
+        :param right_question: TODO: I don't understand this.
+        :param agg: The aggregation performed on col_name. type: (like, not in, >, <, =, >=, <=, !=, in, between) -> str
+        :param bool_having: If the table is made up of groups. type: bool
+        """
         revised_right_question = right_question[:-1] + " for this calculation?"
         return "Assume the system will enforce the condition that in the results, %s, " \
                "answer the following question to help the system to calculate " % self.root_terminal_description(
