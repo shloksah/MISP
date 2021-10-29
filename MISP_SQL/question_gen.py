@@ -814,4 +814,5 @@ class QuestionGenerator:
 
 def clean_words(words):
     word=re.sub('[^a-zA-Z]+',' ',str(words))
+    
     return word
