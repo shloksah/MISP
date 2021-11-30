@@ -4,8 +4,10 @@ import argparse
 
 class Menu(flx.Widget):
     def init(self):
+        global window
         self.colors = {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'}
 
+        window.document.head.innerHTML = window.document.head.innerHTML + "<link href=\"https://fonts.googleapis.com/icon?family=Material+Icons+Sharp\" rel=\"stylesheet\">"
         with ui.VSplit(flex=1, style=f'background-color:{self.colors["primary"]};color:{self.colors["text"]};'):
             Head(self.colors)
             with ui.HSplit(flex=10):
@@ -16,11 +18,27 @@ class Menu(flx.Widget):
 class Head(flx.Widget):
     def init(self, colors):
         self.colors = colors
+        self.show_lng = False
 
-        with flx.HBox(style=f'background-color:{self.colors["secondary"]};justify-content:flex-start;align-items:center;'):
-            ui.Label(text='Menu')
-            ui.ComboBox(selected_key='Normal',style=f'background-color:{self.colors["tertiary"]};',options=('Normal','Deuteranomaly', 'Protanomaly', 'Protanopia', 'Deuteranopia', 'Tritanopia', 'Tritanopia', 'Tritanomaly', 'Achromatopsia'))
-            ui.Label(text='Lang')
+        with flx.HBox(style=f'background-color:{self.colors["secondary"]};justify-content:flex-start;align-items:center;',flex=10):
+            self.lang = ui.Button(text='language',style=f'background-color:{self.colors["secondary"]};color:{self.colors["text"]};',flex=1)
+            google_btn(self.lang)
+
+            self.vis_opt = DropdownMenu(
+                self.colors,
+                'visibility',
+                ('Normal','Deuteranomaly','Protanomaly','Protanopia','Deuteranopia','Tritanopia','Tritanopia','Tritanomaly','Achromatopsia'),
+                flex = 2
+            )
+
+            ui.Label(flex=8)
+
+    @event.reaction('lang.pointer_click')
+    def show_lang_opt(self, *events):
+        if self.show_lng:
+            print(events)
+        else:
+            print(events) 
 
 
 class Chat(flx.Widget):
@@ -32,7 +50,8 @@ class Chat(flx.Widget):
 
             with ui.HSplit(flex=1):
                 self.input = ui.LineEdit(placeholder_text='Message...',flex=6,style=f'background-color:{self.colors["tertiary"]};color:{self.colors["text"]};')
-                self.send_btn = ui.Button(text="⎆",flex=1,style=f'background-color:{self.colors["tertiary"]};color:{self.colors["text"]};')
+                self.send_btn = ui.Button(text="keyboard_return",flex=1,style=f'background-color:{self.colors["tertiary"]};color:{self.colors["text"]};')
+                google_btn(self.send_btn)
             
 
     @event.reaction('input.submit', 'send_btn.pointer_click')
@@ -103,31 +122,46 @@ class MultiSelect(flx.Widget):
         pass
 
 
-def interpret_args():
-    """ Interprets the command line arguments, and returns a dictionary. """
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--use_bert', type=bool, default=False)
-    parser.add_argument('--data_directory', type=str, default='processed_data')
-    parser.add_argument('--output_embedding_size', type=int, default=300)
-    parser.add_argument('--input_embedding_size', type=int, default=300)
-    parser.add_argument('--freeze', type=bool, default=False)
-    parser.add_argument('--encoder_state_size', type=int, default=300)
-    parser.add_argument('--encoder_num_layers', type=int, default=1)
-    parser.add_argument('--maximum_utterances', type=int, default=5)
-    parser.add_argument("--bert_type_abb", type=str, help="Type of BERT model to load. e.g.) uS, uL, cS, cL, and mcS")
-    args = parser.parse_args()
+class DropdownMenu(flx.Widget):
+    def init(self, colors, button, options):
+        self.colors = colors
 
-    return args
+        with ui.VBox(style=f'background-color:{self.colors["secondary"]}') as self.dropdown:
+            self.btn = ui.Button(text=button,style=f'background-color:{self.colors["tertiary"]};color:{self.colors["text"]};')
+            google_btn(self.btn)
+            self.content = ui.VBox(style=f'background-color:{self.colors["secondary"]};color:{self.colors["text"]};display:none;position:absolute;')
+
+        opts = ''
+        for option in options:
+            opts += f'<ul>{option}</ul>'
+
+        print(opts)
+        print(self.content.node)
+
+        self.content.node.innerHTML=opts
+        print(self.content.node.innerHTML)
+
+    @event.reaction('btn.pointer_click')
+    def show_visability_opt(self, *events):
+        self.toggle_display()
+
+    def toggle_display(self):
+        value = self.content.node.style.display
+
+        if value == 'none':
+            self.content.node.style.display = 'block'
+        else:
+            self.content.node.style.display = 'none'
+
+
+def google_btn(node):
+    node.node.className = node.node.className + ' material-icons-sharp'
 
 # Runs the interface as a desktop app.
 if __name__ == "__main__":
-    # params = interpret_args()
-    # model = CustomModel(params)
-    # model.load(os.path.join(os.getcwd(), "EditSQL/logs_clean/logs_spider_editsql_10p/model_best.pt"))
-
-    # print(model)
+    # Build model
+    # Build para
 
     app = flx.App(Menu)
-    flx.assets.add_shared_asset(asset_name='https://fonts.googleapis.com/icon?family=Material+Icons+Sharp')
     app.launch('app')
     flx.run()
