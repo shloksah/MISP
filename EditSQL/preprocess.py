@@ -302,6 +302,7 @@ def parse_sql(sql_string, db_id, column_names, output_vocab, schema_tokens, sche
 
 
 def read_spider_split(split_json, interaction_list, database_schemas, column_names, output_vocab, schema_tokens, remove_from):
+  print('read_spider_split')
   with open(split_json) as f:
     split_data = json.load(f)
   print('read_spider_split', split_json, len(split_data))
@@ -348,6 +349,7 @@ def read_spider_split(split_json, interaction_list, database_schemas, column_nam
 
 
 def read_data_json(split_json, interaction_list, database_schemas, column_names, output_vocab, schema_tokens, remove_from):
+  print('read_data_json')
   with open(split_json) as f:
     split_data = json.load(f)
   print('read_data_json', split_json, len(split_data))

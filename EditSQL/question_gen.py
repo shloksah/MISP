@@ -17,22 +17,22 @@ class QuestionGenerator(BaseQuestionGenerator):
             if semantic_tag == WHERE_COL:
                 question = question[:-1] + ';\n'
                 sel_invalid_structure = sel_none_of_above + 1
-                question += "(%d) The system does not need to consider any conditions." % sel_invalid_structure
+                question += "(%d) I do not need to consider any conditions." % sel_invalid_structure
 
             elif semantic_tag == GROUP_COL:
                 question = question[:-1] + ';\n'
                 sel_invalid_structure = sel_none_of_above + 1
-                question += "(%d) The system does not need to group any items." % sel_invalid_structure
+                question += "(%d) I do not need to group any items." % sel_invalid_structure
 
             elif semantic_tag == HAV_AGG_v2:
                 question = question[:-1] + ';\n'
                 sel_invalid_structure = sel_none_of_above + 1
-                question += "(%d) The system does not need to consider any conditions." % sel_invalid_structure
+                question += "(%d) I do not need to consider any conditions." % sel_invalid_structure
 
             elif semantic_tag == ORDER_AGG_v2:
                 question = question[:-1] + ';\n'
                 sel_invalid_structure = sel_none_of_above + 1
-                question += "(%d) The system does not need to order the results." % sel_invalid_structure
+                question += "(%d) I do not need to order the results." % sel_invalid_structure
 
         return question, cheat_sheet, sel_none_of_above
 

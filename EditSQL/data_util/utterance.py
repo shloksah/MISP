@@ -44,6 +44,7 @@ class Utterance:
                                         key=lambda x: len(x[0]))
 
         # Tokenize and anonymize it if necessary.
+        #print('Utterance:',shortest_gold_and_results)
         self.original_gold_query = shortest_gold_and_results[0]
         self.gold_sql_results = shortest_gold_and_results[1]
 

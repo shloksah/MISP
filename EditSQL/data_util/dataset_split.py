@@ -2,6 +2,7 @@
 """
 import os
 import pickle
+import json
 
 class DatasetSplit:
     """Stores a split of the ATIS dataset.
@@ -15,14 +16,19 @@ class DatasetSplit:
             with open(processed_filename, 'rb') as infile:
                 self.examples = pickle.load(infile)
         else:
-            print(
-                "Loading raw data from " +
+            print("Loading raw data from " +
                 raw_filename +
-                " and writing to " +
+                " and NOT writing to " +
                 processed_filename)
 
             infile = open(raw_filename, 'rb')
-            examples_from_file = pickle.load(infile)
+
+            if raw_filename[-3:]=='pkl':
+                examples_from_file = pickle.load(infile)
+            else:
+                examples_from_file = json.load(infile)
+                
+            #print(examples_from_file)
             assert isinstance(examples_from_file, list), raw_filename + \
                 " does not contain a list of examples"
             infile.close()
@@ -34,11 +40,10 @@ class DatasetSplit:
                 if keep:
                     self.examples.append(obj)
 
-
             print("Loaded " + str(len(self.examples)) + " examples")
-            outfile = open(processed_filename, 'wb')
-            pickle.dump(self.examples, outfile)
-            outfile.close()
+            #outfile = open(processed_filename, 'wb')
+            #pickle.dump(self.examples, outfile)
+            #outfile.close()
 
     def get_ex_properties(self, function):
         """ Applies some function to the examples in the dataset.

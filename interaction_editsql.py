@@ -859,7 +859,7 @@ def online_learning(online_train_data_examples, init_train_data_examples, online
                                 count_exit += 1
                         except Exception:
                             count_exception += 1
-                            # traceback.print_exc()
+                            traceback.print_exc()
                             print("Interaction Exception (count = {}) in example {}!".format(count_exception, idx))
                             print("-" * 50 + "\nAfter interaction: \nfinal SQL: {}".format(" ".join(hyp.sql)))
 
@@ -1654,7 +1654,7 @@ def online_learning_misp_perfect(online_train_data_examples, online_train_raw_ex
                             count_exit += 1
                     except Exception:
                         count_exception += 1
-                        # traceback.print_exc()
+                        traceback.print_exc()
                         print("Interaction Exception (count = {}) in example {}!".format(count_exception, idx))
                         print("-" * 50 + "\nAfter interaction: \nfinal SQL: {}".format(" ".join(hyp.sql)))
 
@@ -1836,14 +1836,14 @@ def interaction(raw_proc_example_pairs, user, agent, max_generation_length, outp
         metrics_sums[metric] = 0.
 
     interaction_records = []
-
+    #print("Interactions running")
     starting_time = datetime.datetime.now()
     count_exception, count_exit = 0, 0
     for idx, (raw_example, example) in enumerate(raw_proc_example_pairs):
         with torch.no_grad():
-            input_item = agent.world_model.semparser.spider_single_turn_encoding(
-                example, max_generation_length)
-
+            input_item = agent.world_model.semparser.spider_single_turn_encoding(example, max_generation_length)
+            
+            #print(dir(example.interaction.utterances[0]))
             question = example.interaction.utterances[0].original_input_seq
             true_sql = example.interaction.utterances[0].original_gold_query
             print("\n" + "#" * 50)
@@ -1916,6 +1916,7 @@ def interaction(raw_proc_example_pairs, user, agent, max_generation_length, outp
                             count_exit += 1
                     except Exception:
                         count_exception += 1
+                        traceback.print_exc()
                         print("Interaction Exception (count = {}) in example {}!".format(count_exception, idx))
                         bool_exit = False
                     else:
@@ -2073,6 +2074,7 @@ def real_user_interaction(raw_proc_example_pairs, user, agent, max_generation_le
                     count_exit += 1
             except Exception:
                 count_exception += 1
+                traceback.print_exc()
                 print("Interaction Exception (count = {}) in example {}!".format(count_exception, idx))
                 bool_exit = False
                 bool_exception = True
@@ -2135,7 +2137,7 @@ def real_user_interaction(raw_proc_example_pairs, user, agent, max_generation_le
 
 if __name__ == "__main__":
     params = interpret_args()
-
+    
     # Prepare the dataset into the proper form.
     data = atis_data.ATISDataset(params)
 

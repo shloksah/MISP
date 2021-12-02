@@ -242,7 +242,10 @@ def load_function(parameters,
         keep = False
 
         raw_utterances = interaction_example["interaction"]
-
+        #print(raw_utterances[0])
+        language=interaction_example['lang']
+        print(language)
+        #raw_utterances[0]
         if "database_id" in interaction_example:
             database_id = interaction_example["database_id"]
             interaction_id = interaction_example["interaction_id"]
