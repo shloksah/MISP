@@ -23,7 +23,7 @@ class Agent:
     This is the class for Model-based Interactive Semantic Parsing (MISP) agent.
     """
     def __init__(self, world_model, error_detector, question_generator,
-                 bool_mistake_exit=False, bool_structure_question=False):
+                bool_mistake_exit=False, bool_structure_question=False, set_text=None):
         """
         The constructor for Agent class.
         :param world_model: An instance of MISP_SQL.WorldModel.
@@ -39,6 +39,7 @@ class Agent:
         self.q_gen = question_generator
         self.bool_mistake_exit = bool_mistake_exit
         self.bool_structure_question = bool_structure_question
+        self.set_text = set_text
 
     def verified_qa(self, user, question, answer_sheet, pointer, tag_seq):
         """
@@ -52,6 +53,9 @@ class Agent:
         :return: user_feedback.
         """
         print("Question: %s" % question)
+
+        if self.set_text:
+            self.set_text('r', question)
         user_feedback = user.get_answer(pointer, answer_sheet)
         user.record_user_feedback(tag_seq[pointer], user_feedback, bool_qa=True)
 
@@ -72,6 +76,10 @@ class Agent:
         :return: user_selections (a list of indices indicating user selections).
         """
         print("Question: %s" % opt_question)
+
+        if self.set_text:
+            self.set_text('r', opt_question)
+
         user_selections = user.get_selection(pointer, opt_answer_sheet, sel_none_of_above)
         user.option_selections.append((semantic_unit[0], opt_question, user_selections))
         # save to questioned_tags

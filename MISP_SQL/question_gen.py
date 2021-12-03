@@ -3,14 +3,13 @@ from .utils import *
 import torch
 from transformers import T5ForConditionalGeneration,T5Tokenizer
 import random
+import os
 
 class QuestionGenerator:
     """
     This is the class for question generation.
     """
-    def __init__(self):
-        print("Called")
-
+    def __init__(self, lang=None):
         def set_seed(seed):
             torch.manual_seed(seed)
             if torch.cuda.is_available():
@@ -18,10 +17,11 @@ class QuestionGenerator:
 
         set_seed(42)
 
-        self.model = T5ForConditionalGeneration.from_pretrained('/users/PAS2062/shloksah/ondemand/cse5525/project/MISP/MISP_SQL/t5_paraphrase')
+        self.model = T5ForConditionalGeneration.from_pretrained(os.path.join(os.getcwd(), 'MISP_SQL/t5_paraphrase'))
         self.tokenizer = T5Tokenizer.from_pretrained('t5-base')
+        self.lang = lang
 
-        self.device = "cpu" #torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print ("device ",self.device)
         self.model = self.model.to(self.device)
 
@@ -53,6 +53,9 @@ class QuestionGenerator:
         self.desc_asc_limit = {("desc", False): "in descending order", ("asc", False): "in ascending order",
                                ("desc", True): "in descending order and limited to top N",
                                ("asc", True): "in ascending order and limited to top N"}
+
+    def set_lang(self, lang):
+        self.lang = lang
 
     def paraphrase_question(self,sentence):
         

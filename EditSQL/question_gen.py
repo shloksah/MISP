@@ -3,8 +3,8 @@ from MISP_SQL.utils import WHERE_COL, GROUP_COL, ORDER_AGG_v2, HAV_AGG_v2
 
 
 class QuestionGenerator(BaseQuestionGenerator):
-    def __init__(self, bool_structure_question=False):
-        BaseQuestionGenerator.__init__(self)
+    def __init__(self, bool_structure_question=False, lang=None):
+        BaseQuestionGenerator.__init__(self, lang)
         self.bool_structure_question = bool_structure_question
 
     def option_generation(self, cand_semantic_units, old_tag_seq, pointer):

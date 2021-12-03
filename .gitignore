@@ -12,3 +12,4 @@ SQLova_model/download/bert/pytorch_model_uncased_L-12_H-768_A-12.bin
 SQLova_model/checkpoints_online_pretrain_10p
 SQLova_model/checkpoints_online_pretrain_1p
 SQLova_model/checkpoints_online_pretrain_5p
+MISP_SQL/t5_paraphrase/*.bin

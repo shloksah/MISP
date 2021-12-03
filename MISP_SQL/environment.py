@@ -30,7 +30,7 @@ class UserSim:
     """
     This is the class for user simulator.
     """
-    def __init__(self, error_evaluator):
+    def __init__(self, error_evaluator, set_text=None, lang=None):
         """
         Constructor of UserSim.
         :param error_evaluator: An instance of ErrorEvaluator.
@@ -38,6 +38,7 @@ class UserSim:
         self.user_type = "sim"
         self.patience = 3
         self.error_evaluator = error_evaluator
+        self.set_text = set_text
 
         self.ground_truth = None
         self.tag_seq = None
@@ -117,6 +118,10 @@ class UserSim:
             answer = 'exit'
 
         print("User answer: %s.\n" % answer)
+
+        if self.set_text:
+            self.set_text('q', answer + '\n')
+
         return answer
 
     def get_selection(self, pointer, answer_sheet, sel_none_of_above):
@@ -142,6 +147,9 @@ class UserSim:
             selections.append(sel_none_of_above)
 
         print("User answer: %s.\n" % str(selections))
+
+        if self.set_text:
+            self.set_text('q', str(selections) + '\n')
 
         return selections
 

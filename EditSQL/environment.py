@@ -603,14 +603,14 @@ class ErrorEvaluator(BaseErrorEvaluator):
 
 
 class UserSim(BaseUserSim):
-    def __init__(self, error_evaluator, bool_structure_question=False):
+    def __init__(self, error_evaluator, set_text=None, lang=None, bool_structure_question=False):
         """
         Constructor of UserSim.
         :param error_evaluator: an instance of ErrorEvaluator.
         :param bool_structure_question: set to True if SQL structure (WHERE/GROUP_COL, ORDER/HAV_AGG_v2) is
             allow to question.
         """
-        BaseUserSim.__init__(self, error_evaluator)
+        BaseUserSim.__init__(self, error_evaluator, set_text, lang)
         self.bool_structure_question = bool_structure_question
 
     def get_selection(self, pointer, answer_sheet, sel_none_of_above):
@@ -635,6 +635,9 @@ class UserSim(BaseUserSim):
             selections.append(sel_none_of_above)
 
         print("User answer: %s.\n" % str(selections))
+        
+        if self.set_text:
+            self.set_text('q', str(selections) + '\n')
 
         return selections
 
