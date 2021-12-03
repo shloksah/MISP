@@ -23,7 +23,7 @@ echo ${OUTPUT_PATH}
 
 python3 interface.py \
       --raw_train_filename="EditSQL/data_clean/spider_data_removefrom/train_10p.pkl" \
-      --raw_validation_filename="EditSQL/data_clean/spider_data_removefrom/dev.pkl" \
+      --raw_validation_filename="EditSQL/data_clean/spider_data_removefrom/dev_lang.json" \
       --database_schema_filename="EditSQL/data_clean/spider_data_removefrom/tables.json" \
       --embedding_filename=$GLOVE_PATH \
       --data_directory="EditSQL/data_clean/processed_data_spider_removefrom_10p" \
