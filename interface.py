@@ -23,9 +23,18 @@ import re
 import sys
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-def google_btn(node):
-    node.node.className = node.node.className + ' material-icons-sharp'
+langs = {'english':'en','ferançais':'fr','普通話':'zh-TW','española':'es'}
+themes = {
+    'Normal': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
+    'Deuteranomaly': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
+    'Protanomaly': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
+    'Protanopia': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
+    'Deuteranopia': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
+    'Tritanopia': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
+    'Tritanomaly': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
+    'Achromatopsia': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'}
+}
+coulors = themes['Normal']
 
 def interpret_args():
     """ Interprets the command line arguments, and returns a dictionary. """
@@ -227,56 +236,62 @@ def interpret_args():
 
 
 class Menu(flx.Widget):
-    def init(self, model):        
-        self.colors = {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'}
-
-        with ui.VSplit(flex=1, style=f'background-color:{self.colors["primary"]};color:{self.colors["text"]};'):
-            Head(self.colors)
+    def init(self, model, colors):
+        with ui.VSplit(flex=1, style=f'background-color:{colors["primary"]};color:{colors["text"]};'):
+            Head(model,colors,style='overflow:visible;',flex=1)
             with ui.HSplit(flex=10):
-                Chat(self.colors,model,flex=2)
-                Data(self.colors,flex=3)
+                Chat(model,colors,flex=2)
+                Data(colors,flex=3)
 
 
 class Head(flx.Widget):
-    def init(self, colors):
-        self.colors = colors
-        self.show_lng = False
+    def init(self, model, colors):
         global window
+        self.model = model
+        self.colors = colors
 
         window.document.head.innerHTML = window.document.head.innerHTML + "<link href=\"https://fonts.googleapis.com/icon?family=Material+Icons+Sharp\" rel=\"stylesheet\">"
-        with flx.HBox(style=f'background-color:{self.colors["secondary"]};justify-content:flex-start;align-items:center;',flex=10):
-            self.lang = ui.Button(text='language',style=f'background-color:{self.colors["secondary"]};color:{self.colors["text"]};',flex=1)
-            google_btn(self.lang)
+        with flx.HBox(style=f'background-color:{self.colors["secondary"]};justify-content:flex-start;align-items:center;overflow:visible;',flex=10):   
+            DropdownMenu(
+                'language',
+                langs.keys(),
+                self.set_lang,
+                self.colors
+            )
 
-            self.vis_opt = DropdownMenu(
-                self.colors,
+            DropdownMenu(
                 'visibility',
-                ('Normal','Deuteranomaly','Protanomaly','Protanopia','Deuteranopia','Tritanopia','Tritanopia','Tritanomaly','Achromatopsia'),
-                flex = 2
+                ('Normal','Deuteranomaly','Protanomaly','Protanopia','Deuteranopia','Tritanopia','Tritanomaly','Achromatopsia'),
+                self.set_theme,
+                self.colors
             )
 
             ui.Label(flex=8)
+    
+    def set_lang(self):
+        global window
+        nodes = window.document.querySelectorAll( ":hover" )
+        self.model.set_lang(langs[nodes[nodes.length - 1].innerText])
 
-    @event.reaction('lang.pointer_click')
-    def show_lang_opt(self, *events):
-        if self.show_lng:
-            print(events)
-        else:
-            print(events) 
+    def set_theme(self):
+        global window
+        nodes = window.document.querySelectorAll( ":hover" )
+        self.model.set_theme(nodes[nodes.length - 1].innerText)
+        window.location.reload()
 
 
 class Chat(flx.Widget):
-    def init(self, colors, model):
-        self.colors = colors
+    def init(self, model, colors):
         self.model = model
+        self.colors = colors
 
-        with ui.VSplit(style=f'background-color:{self.colors["secondary"]}'):
+        with ui.VSplit(style=f'background-color:{colors["secondary"]}'):
             self.messages = ui.VBox(flex=20,style='justify-content:flex-start;flex-direction:column;overflow-y:scroll;')
 
             with ui.HSplit(flex=1):
-                self.input = ui.LineEdit(placeholder_text='Message...',flex=6,style=f'background-color:{self.colors["tertiary"]};color:{self.colors["text"]};')
-                self.send_btn = ui.Button(text="keyboard_return",flex=1,style=f'background-color:{self.colors["tertiary"]};color:{self.colors["text"]};')
-                google_btn(self.send_btn)
+                self.input = ui.LineEdit(placeholder_text='Message...',flex=6,style=f'background-color:{colors["tertiary"]};color:{colors["text"]};')
+                self.send_btn = ui.Button(text="keyboard_return",flex=1,style=f'background-color:{colors["tertiary"]};color:{colors["text"]};')
+                self.send_btn.node.className = self.send_btn.node.className + ' material-icons-sharp'
 
     @event.reaction('model.question')    
     def type_q(self):
@@ -327,52 +342,66 @@ class Chat(flx.Widget):
 
 class Data(flx.Widget):
     def init(self, colors):
-        self.colors = colors
 
-        with flx.HSplit(style=f'background-color:{self.colors["secondary"]}'):
+        with flx.HSplit(style=f'background-color:{colors["secondary"]}'):
             pass
 
 
-class BinarySelect(flx.Widget):
-    def init(self):
-        pass
-
-
-class MultiSelect(flx.Widget):
-    def init(self):
-        pass
-
-
 class DropdownMenu(flx.Widget):
-    def init(self, colors, button, options):
+    def init(self, button, options, func, colors):
+        self.option = ""
+        self.button = button
+        self.options = options
+        self.func = func
         self.colors = colors
 
-        with ui.VBox(style=f'background-color:{self.colors["secondary"]}') as self.dropdown:
-            self.btn = ui.Button(text=button,style=f'background-color:{self.colors["tertiary"]};color:{self.colors["text"]};')
-            google_btn(self.btn)
-            self.content = ui.VBox(style=f'background-color:{self.colors["secondary"]};color:{self.colors["text"]};display:none;position:absolute;')
+    def _render_dom(self):
+        return flx.create_element('div', {'style': 'position:relative;display:inline;overflow:visible;'},
+            flx.create_element('button', {
+                'style': f'background-color:{self.colors["secondary"]};color:{self.colors["text"]};',
+                'class': 'flx-Button flx-BaseButton flx-Widget material-icons-sharp',
+                'onclick': self.toggle_display
+            }, self.button),
+            flx.create_element('div', {
+                'style': f"""
+                    position:absolute;display:none;z-index:5;background-color:{self.colors["secondary"]};
+                    border-radius:0.5rem;box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, 0.2);
+                    cursor: pointer;overflow-y:scroll;max-height:50vh;""",
+                'onmouseleave': self.hide_display,
+            },
+                [flx.create_element('li', {
+                    'style': "list-style:none;padding:0.5rem;border-radius:0.5rem;",
+                    'onmouseover': self.hover_on,
+                    'onmouseleave': self.hover_off,
+                    'onclick': self.func
+                }, option) for option in self.options]
+            )
+        )
 
-        # opts = ''
-        # for option in options:
-        #     opts += f'<ul>{option}</ul>'
+    def hover_on(self):
+        global window
+        nodes = window.document.querySelectorAll( ":hover" )
+        nodes[nodes.length - 1].style.backgroundColor = self.colors["primary"]
 
-        # print(opts)
-        # print(self.content.node)
+    def hover_off(self):
+        global window
+        nodes = window.document.querySelectorAll( ":hover" )
 
-        # self.content.node.innerHTML=opts
-        # print(self.content.node.innerHTML)
-
-    @event.reaction('btn.pointer_click')
-    def show_visability_opt(self, *events):
-        self.toggle_display()
+        for i in range(self.outernode.lastChild.children.length):
+            child = self.outernode.lastChild.children[i]
+            if child != nodes[nodes.length - 1]:
+                child.style.backgroundColor = self.colors['secondary']
+                
+    def hide_display(self):
+        self.outernode.lastChild.style.display = 'none'
 
     def toggle_display(self):
-        value = self.content.node.style.display
+        value = self.outernode.lastChild.style.display
 
         if value == 'none':
-            self.content.node.style.display = 'block'
+            self.outernode.lastChild.style.display = 'block'
         else:
-            self.content.node.style.display = 'none'
+            self.outernode.lastChild.style.display = 'none'
 
 
 class Edit_SQL(flx.PyComponent):
@@ -381,7 +410,6 @@ class Edit_SQL(flx.PyComponent):
 
     def init(self, params):
         # The interface
-        Menu(self)
         self.params = params
 
         # Prepare the dataset into the proper form.
@@ -397,11 +425,11 @@ class Edit_SQL(flx.PyComponent):
         model.load(os.path.join("EditSQL/logs_clean/logs_spider_editsql_10p", "model_best.pt"))
         model = model.to(device)
 
-        question_generator = QuestionGenerator(bool_structure_question=True, lang='eng')
+        self.question_generator = QuestionGenerator(bool_structure_question=True, lang='eng')
         error_detector = ErrorDetectorProbability(0.995)
         world_model = WorldModel(model, 3, None, 1, 0.0,
                                 bool_structure_question=True)
-        self.agent = Agent(world_model, error_detector, question_generator,
+        self.agent = Agent(world_model, error_detector, self.question_generator,
                     bool_mistake_exit=False,
                     bool_structure_question=True,
                     set_text=self.set_text)
@@ -411,6 +439,9 @@ class Edit_SQL(flx.PyComponent):
         self.user = UserSim(error_evaluator, set_text=self.set_text, lang='eng', bool_structure_question=params.ask_structure)
 
         self.raw_valid_examples = json.load(open(os.path.join(params.raw_data_directory, "dev_reordered.json")))
+
+        # Shows client interface.
+        Menu(self, coulors)
 
     def extract_clause_asterisk(self, g_sql_toks):
         """
@@ -450,9 +481,21 @@ class Edit_SQL(flx.PyComponent):
             for l in value:
                 q += l
                 self.set_question(q)
-                time.sleep(random.uniform(0.1, 0.001))
+                time.sleep(random.uniform(0.2, 0.1))
+            time.sleep(1)
         else:
             self.set_response(value)
+            time.sleep(1)
+
+    @flx.action
+    def set_theme(self, theme):
+        global coulors
+        coulors = themes[theme]
+
+    @flx.action
+    def set_lang(self, lang):
+        self.user.set_lang(lang)
+        self.question_generator.set_lang(lang)
 
     @flx.action
     def interaction(self):
@@ -515,6 +558,8 @@ class Edit_SQL(flx.PyComponent):
             flat_sequence = example.flatten_sequence(sequence)
             sys.stdout.flush()
 
+            print('\n')
+            print(flat_sequence)
             self.set_text('r', 'Working on it!' + '\n')
 
 # Runs the interface as a desktop app.
@@ -523,5 +568,5 @@ if __name__ == "__main__":
     params = interpret_args()
     # App
     app = flx.App(Edit_SQL, params)
-    app.launch('app')
+    app.launch('browser')
     flx.run()

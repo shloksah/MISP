@@ -54,9 +54,6 @@ class QuestionGenerator:
                                ("desc", True): "in descending order and limited to top N",
                                ("asc", True): "in ascending order and limited to top N"}
 
-    def set_lang(self, lang):
-        self.lang = lang
-
     def paraphrase_question(self,sentence):
         
         #sentence = "Which course should I take to get started in data science?"
@@ -963,6 +960,9 @@ class QuestionGenerator:
         else:
             question = prefix + option_text.strip()
             return question, cheat_sheet, -1
+
+    def set_lang(self, lang):
+        self.lang = lang
 
 def clean_words(words):
     word=re.sub('[^a-zA-Z]+',' ',str(words))
