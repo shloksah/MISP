@@ -39,6 +39,7 @@ class UserSim:
         self.patience = 3
         self.error_evaluator = error_evaluator
         self.set_text = set_text
+        self.lang = lang
 
         self.ground_truth = None
         self.tag_seq = None
@@ -152,6 +153,9 @@ class UserSim:
             self.set_text('q', str(selections) + '\n')
 
         return selections
+
+    def set_lang(self, lang):
+        self.lang = lang
 
 
 class GoldUserSim(UserSim):

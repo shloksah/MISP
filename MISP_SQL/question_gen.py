@@ -966,6 +966,9 @@ class QuestionGenerator:
             question = prefix + option_text.strip()
             return question, cheat_sheet, -1
 
+    def set_lang(self, lang):
+        self.lang = lang
+
 def clean_words(words):
     word=re.sub('[^a-zA-Z]+',' ',str(words))
     
