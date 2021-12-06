@@ -1,6 +1,6 @@
 from MISP_SQL.question_gen import QuestionGenerator as BaseQuestionGenerator
 from MISP_SQL.utils import WHERE_COL, GROUP_COL, ORDER_AGG_v2, HAV_AGG_v2
-
+from deep_translator import GoogleTranslator
 
 class QuestionGenerator(BaseQuestionGenerator):
     def __init__(self, bool_structure_question=False, lang=None):
@@ -34,6 +34,7 @@ class QuestionGenerator(BaseQuestionGenerator):
                 sel_invalid_structure = sel_none_of_above + 1
                 question += "(%d) I do not need to order the results." % sel_invalid_structure
 
-        return question, cheat_sheet, sel_none_of_above
+        question_op = GoogleTranslator(source='auto', target='fr').translate(question)
+        return question_op, cheat_sheet, sel_none_of_above
 
 

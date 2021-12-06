@@ -4,6 +4,7 @@ import torch
 from transformers import T5ForConditionalGeneration,T5Tokenizer
 import random
 import os
+from deep_translator import GoogleTranslator
 
 class QuestionGenerator:
     """
@@ -57,8 +58,8 @@ class QuestionGenerator:
     def set_lang(self, lang):
         self.lang = lang
 
+
     def paraphrase_question(self,sentence):
-        
         #sentence = "Which course should I take to get started in data science?"
         text =  "paraphrase: " + sentence + " </s>"
         max_len = 256
@@ -87,9 +88,10 @@ class QuestionGenerator:
             if sent.lower() != sentence.lower() and sent not in final_outputs:
                 final_outputs.append(sent)
 
-        #for i, final_output in enumerate(final_outputs):
-            #print("{}: {}".format(i, final_output))
-        return final_outputs[random.randint(0, len(final_outputs)-1)]
+        sentence_op = GoogleTranslator(source='auto', target='fr').translate(final_outputs[0])
+        print(sentence_op)
+        return sentence_op
+        #return final_outputs[random.randint(0, len(final_outputs)-1)]
 
     def agg_col_tab_description(self, col_name, tab_name, agg=None, bool_having=False, bool_distinct=False):
         """

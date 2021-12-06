@@ -1,6 +1,7 @@
 import os
 from flexx import flx, ui, event
 import argparse
+from deep_translator import GoogleTranslator
 
 # EditSQL imports
 import random
@@ -408,7 +409,7 @@ class Edit_SQL(flx.PyComponent):
 
         # environment setup: user simulator
         error_evaluator = ErrorEvaluator()
-        self.user = UserSim(error_evaluator, set_text=self.set_text, lang='eng', bool_structure_question=params.ask_structure)
+        self.user = UserSim(error_evaluator, set_text=self.set_text, lang='eng',bool_structure_question=params.ask_structure)
 
         self.raw_valid_examples = json.load(open(os.path.join(params.raw_data_directory, "dev_reordered.json")))
 
@@ -461,10 +462,10 @@ class Edit_SQL(flx.PyComponent):
         self.reorganized_data = list(zip(self.raw_valid_examples, self.data.get_all_interactions(self.data.valid_data)))
         random.shuffle(self.reorganized_data)
         (raw_example, example) = self.reorganized_data[1]
-
         # Sets the question
-        question = ' '.join(example.interaction.utterances[0].original_input_seq) + '\n'
-        self.set_text('q', question)
+        question = ' '.join(example.interaction.utterances[0].original_input_seq) +'\n'
+        question_op = GoogleTranslator(source='auto', target='fr').translate(question) +'\n'
+        self.set_text('q', question_op)
 
         max_generation_length = 100
         count_exception = 0
@@ -514,8 +515,9 @@ class Edit_SQL(flx.PyComponent):
 
             flat_sequence = example.flatten_sequence(sequence)
             sys.stdout.flush()
-
-            self.set_text('r', 'Working on it!' + '\n')
+            working_text='Working on it!' + '\n'
+            working_text_op = GoogleTranslator(source='auto', target='fr').translate(working_text)+ '\n'
+            self.set_text('r', working_text_op)
 
 # Runs the interface as a desktop app.
 if __name__ == "__main__":

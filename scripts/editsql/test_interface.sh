@@ -1,6 +1,6 @@
 #!/bin/bash
 
-activate gpu-py3
+source activate gpu-py3
 export CUDA_VISIBLE_DEVICES=0
 
 SETTING="online_pretrain_10p" 
