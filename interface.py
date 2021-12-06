@@ -23,7 +23,7 @@ import re
 import sys
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-langs = {'english':'en','ferançais':'fr','普通話':'zh-TW','española':'es'}
+langs = {'english':'en','français':'fr','普通話':'zh-TW','española':'es'}
 themes = {
     'Normal': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
     'Deuteranomaly': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
@@ -32,7 +32,7 @@ themes = {
     'Deuteranopia': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
     'Tritanopia': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
     'Tritanomaly': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
-    'Achromatopsia': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'}
+    'Achromatopsia': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#888888','u1':'#ffffff','u2':'#000000'}
 }
 coulors = themes['Normal']
 
@@ -234,6 +234,10 @@ def interpret_args():
 
     return args
 
+params = interpret_args()
+
+# Prepare the dataset into the proper form.
+data = atis_data.ATISDataset(params)
 
 class Menu(flx.Widget):
     def init(self, model, colors):
@@ -289,7 +293,7 @@ class Chat(flx.Widget):
             self.messages = ui.VBox(flex=20,style='justify-content:flex-start;flex-direction:column;overflow-y:scroll;')
 
             with ui.HSplit(flex=1):
-                self.input = ui.LineEdit(placeholder_text='Message...',flex=6,style=f'background-color:{colors["tertiary"]};color:{colors["text"]};')
+                self.input = ui.LineEdit(placeholder_text='',flex=6,style=f'background-color:{colors["tertiary"]};color:{colors["text"]};')
                 self.send_btn = ui.Button(text="keyboard_return",flex=1,style=f'background-color:{colors["tertiary"]};color:{colors["text"]};')
                 self.send_btn.node.className = self.send_btn.node.className + ' material-icons-sharp'
 
@@ -306,7 +310,7 @@ class Chat(flx.Widget):
         if self.input.text != '':
             self.textBubble(self.input.text,self.colors['u1'],'end')
             self.input.set_text('')
-            self.input.set_placeholder_text('Thinking...')
+            self.input.set_placeholder_text('...')
             self.input.set_disabled(True)
             self.messages.outernode.scrollTop = self.messages.outernode.scrollHeight-self.messages.outernode.clientHeight
         else:
@@ -318,7 +322,7 @@ class Chat(flx.Widget):
         # Sends a response to the user.question
         self.textBubble(self.model.response,self.colors['u2'],'start')
         self.input.set_disabled(False)
-        self.input.set_placeholder_text('Message...')
+        self.input.set_placeholder_text('')
 
     def textBubble(self, text, color, side):
         """
@@ -408,24 +412,20 @@ class Edit_SQL(flx.PyComponent):
     question = flx.StringProp('', settable=True)
     response = flx.StringProp('', settable=True)
 
-    def init(self, params):
-        # The interface
-        self.params = params
-
-        # Prepare the dataset into the proper form.
-        self.data = atis_data.ATISDataset(params)
+    def init(self):
+        # The interface.
 
         # model loading
         model = SchemaInteractionATISModel(
             params,
-            self.data.input_vocabulary,
-            self.data.output_vocabulary,
-            self.data.output_vocabulary_schema,
+            data.input_vocabulary,
+            data.output_vocabulary,
+            data.output_vocabulary_schema,
             None)
         model.load(os.path.join("EditSQL/logs_clean/logs_spider_editsql_10p", "model_best.pt"))
         model = model.to(device)
 
-        self.question_generator = QuestionGenerator(bool_structure_question=True, lang='eng')
+        self.question_generator = QuestionGenerator(bool_structure_question=True, lang='en')
         error_detector = ErrorDetectorProbability(0.995)
         world_model = WorldModel(model, 3, None, 1, 0.0,
                                 bool_structure_question=True)
@@ -436,7 +436,7 @@ class Edit_SQL(flx.PyComponent):
 
         # environment setup: user simulator
         error_evaluator = ErrorEvaluator()
-        self.user = UserSim(error_evaluator, set_text=self.set_text, lang='eng', bool_structure_question=params.ask_structure)
+        self.user = UserSim(error_evaluator, set_text=self.set_text, lang='en', bool_structure_question=params.ask_structure)
 
         self.raw_valid_examples = json.load(open(os.path.join(params.raw_data_directory, "dev_reordered.json")))
 
@@ -501,7 +501,7 @@ class Edit_SQL(flx.PyComponent):
     def interaction(self):
         """ Evaluates a sample of interactions. """
         # Gets the data
-        self.reorganized_data = list(zip(self.raw_valid_examples, self.data.get_all_interactions(self.data.valid_data)))
+        self.reorganized_data = list(zip(self.raw_valid_examples, data.get_all_interactions(data.valid_data)))
         random.shuffle(self.reorganized_data)
         (raw_example, example) = self.reorganized_data[1]
 
@@ -564,9 +564,7 @@ class Edit_SQL(flx.PyComponent):
 
 # Runs the interface as a desktop app.
 if __name__ == "__main__":
-    # Model and parameters.
-    params = interpret_args()
     # App
-    app = flx.App(Edit_SQL, params)
+    app = flx.App(Edit_SQL)
     app.launch('browser')
     flx.run()
