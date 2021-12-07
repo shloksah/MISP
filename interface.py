@@ -425,7 +425,7 @@ class Edit_SQL(flx.PyComponent):
             None)
         model.load(os.path.join("EditSQL/logs_clean/logs_spider_editsql_10p", "model_best.pt"))
         model = model.to(device)
-
+        self.lang='en'
         self.question_generator = QuestionGenerator(bool_structure_question=True, lang='en')
         error_detector = ErrorDetectorProbability(0.995)
         world_model = WorldModel(model, 3, None, 1, 0.0,
@@ -497,6 +497,7 @@ class Edit_SQL(flx.PyComponent):
     def set_lang(self, lang):
         self.user.set_lang(lang)
         self.question_generator.set_lang(lang)
+        self.lang=lang
 
     @flx.action
     def interaction(self):
@@ -507,7 +508,8 @@ class Edit_SQL(flx.PyComponent):
         (raw_example, example) = self.reorganized_data[1]
         # Sets the question
         question = ' '.join(example.interaction.utterances[0].original_input_seq) +'\n'
-        question_op = GoogleTranslator(source='auto', target='fr').translate(question) +'\n'
+        
+        question_op = GoogleTranslator(source='auto', target=self.lang).translate(question) +'\n'
         self.set_text('q', question_op)
 
         max_generation_length = 100
@@ -561,7 +563,7 @@ class Edit_SQL(flx.PyComponent):
             print('\n')
             print(flat_sequence)
             working_text='Working on it!' + '\n'
-            working_text_op = GoogleTranslator(source='auto', target='fr').translate(working_text)+ '\n'
+            working_text_op = GoogleTranslator(source='auto', target=self.lang).translate(working_text)+ '\n'
             self.set_text('r', working_text_op)
 
 # Runs the interface as a desktop app.

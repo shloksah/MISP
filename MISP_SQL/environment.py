@@ -1,5 +1,5 @@
 # Environment: user simulator
-
+from deep_translator import GoogleTranslator
 
 class ErrorEvaluator:
     """
@@ -119,9 +119,9 @@ class UserSim:
             answer = 'exit'
 
         print("User answer: %s.\n" % answer)
-
+        answer_op = GoogleTranslator(source='auto', target=self.lang).translate(answer) +'\n'
         if self.set_text:
-            self.set_text('q', answer + '\n')
+            self.set_text('q', answer_op + '\n')
 
         return answer
 

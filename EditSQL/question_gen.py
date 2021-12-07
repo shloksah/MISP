@@ -34,7 +34,7 @@ class QuestionGenerator(BaseQuestionGenerator):
                 sel_invalid_structure = sel_none_of_above + 1
                 question += "(%d) I do not need to order the results." % sel_invalid_structure
 
-        question_op = GoogleTranslator(source='auto', target='fr').translate(question)
+        question_op = GoogleTranslator(source='auto', target=self.lang).translate(question)
         return question_op, cheat_sheet, sel_none_of_above
 
 

@@ -88,7 +88,7 @@ class QuestionGenerator:
             if sent.lower() != sentence.lower() and sent not in final_outputs:
                 final_outputs.append(sent)
 
-        sentence_op = GoogleTranslator(source='auto', target='fr').translate(final_outputs[0])
+        sentence_op = GoogleTranslator(source='auto', target=self.lang).translate(final_outputs[0])
         print(sentence_op)
         return sentence_op
         #return final_outputs[random.randint(0, len(final_outputs)-1)]
