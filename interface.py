@@ -26,7 +26,40 @@ import re
 import sys
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-langs = {'english':'en','français':'fr','普通話':'zh-TW','española':'es'}
+langs = {
+    'Afrikaans':'af',
+    'shqip':'sq',
+    'ኣማርኛ':'am',
+    'العربية':'ar',
+    'Հայերէն':'hy',
+    'آذربايجانجا ديلي':'az',
+    'euskara':'eu',
+    'Беларуская мова':'be',
+    'বাংলা':'bn',
+    'بۉسانسقى':'bs',
+    'български':'bg',
+    'català':'ca',
+    'Sinugboanon':'ceb',
+    '中文':'zh-CN',
+    'corsu':'co',
+    'Hrvatski':'hr',
+    'čeština':'cs',
+    'dansk':'da',
+    'Nederlands':'nl',
+    'English':'en',
+    'Esperanto':'eo',
+    'eesti keel':'et',
+    'suomi':'fi',
+    'français':'fr',
+    'Frysk':'fy',
+    'Galego':'gl',
+    'ქართული':'ka',
+    'Deutsch':'de',
+    'ελληνικά':'el',
+    'ગુજરાતી':'gu',
+    'Kreyòl ayisyen':'ht',
+    'حَوْسَ':'ha',
+    'Española':'es'}
 themes = {
     'Normal': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
     'Deuteranomaly': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#0000FF','u2':'#D500FF'},
