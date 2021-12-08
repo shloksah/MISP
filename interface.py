@@ -8,6 +8,7 @@ import random
 import numpy as np
 import torch
 import json
+from pscript.stubs import Math
 from EditSQL.model.schema_interaction_model import SchemaInteractionATISModel
 from EditSQL.data_util import atis_data
 from EditSQL.question_gen import QuestionGenerator
@@ -19,6 +20,7 @@ from EditSQL.data_util.interaction import Interaction
 from EditSQL.data_util.utterance import Utterance
 from EditSQL.data_util.entities import NLtoSQLDict
 from collections import defaultdict
+import sqlite3
 import time
 import re
 import sys
@@ -27,15 +29,16 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 langs = {'english':'en','français':'fr','普通話':'zh-TW','española':'es'}
 themes = {
     'Normal': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
-    'Deuteranomaly': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
-    'Protanomaly': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
-    'Protanopia': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
-    'Deuteranopia': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
-    'Tritanopia': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
-    'Tritanomaly': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#34dd82','u2':'#7a91ff'},
-    'Achromatopsia': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#888888','u1':'#ffffff','u2':'#000000'}
+    'Deuteranomaly': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#0000FF','u2':'#D500FF'},
+    'Protanomaly': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#FFB5EF','u2':'#59BFFF'},
+    'Protanopia': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#C4C800','u2':'#7F7FFF'},
+    'Deuteranopia': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#00E36A','u2':'#706DFF'},
+    'Tritanopia': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#00FF44','u2':'#FF6868'},
+    'Tritanomaly': {'primary':'#2f2f2f','secondary':'#4c4c4c','tertiary':'#9f9f9f','text':'#ffffff','u1':'#FF27D0','u2':'#00CF75'},
+    'Achromatopsia': {'primary':'#222222','secondary':'#666666','tertiary':'#aaaaaa','text':'#ffffff','u1':'#444444','u2':'#888888'}
 }
 coulors = themes['Normal']
+lang='en'
 
 def interpret_args():
     """ Interprets the command line arguments, and returns a dictionary. """
@@ -240,13 +243,31 @@ params = interpret_args()
 # Prepare the dataset into the proper form.
 data = atis_data.ATISDataset(params)
 
+question_generator = QuestionGenerator(bool_structure_question=True, lang='en')
+
+# model loading
+model = SchemaInteractionATISModel(
+    params,
+    data.input_vocabulary,
+    data.output_vocabulary,
+    data.output_vocabulary_schema,
+    None)
+model.load(os.path.join("EditSQL/logs_clean/logs_spider_editsql_10p", "model_best.pt"))
+model = model.to(device)
+
+error_detector = ErrorDetectorProbability(0.995)
+world_model = WorldModel(model, 3, None, 1, 0.0,
+                        bool_structure_question=True)
+
+raw_valid_examples = json.load(open(os.path.join(params.raw_data_directory, "dev_reordered.json")))
+
 class Menu(flx.Widget):
     def init(self, model, colors):
         with ui.VSplit(flex=1, style=f'background-color:{colors["primary"]};color:{colors["text"]};'):
             Head(model,colors,style='overflow:visible;',flex=1)
             with ui.HSplit(flex=10):
                 Chat(model,colors,flex=2)
-                Data(colors,flex=3)
+                Data(model,colors,flex=2)
 
 
 class Head(flx.Widget):
@@ -302,7 +323,7 @@ class Chat(flx.Widget):
     def type_q(self):
         self.input.set_text(self.model.question)
 
-        if "\n" in self.model.question:
+        if "\t" in self.model.question:
             self.send(None)
 
     @event.reaction('input.submit', 'send_btn.pointer_click')
@@ -311,9 +332,6 @@ class Chat(flx.Widget):
         if self.input.text != '':
             self.textBubble(self.input.text,self.colors['u1'],'end')
             self.input.set_text('')
-            self.input.set_placeholder_text('...')
-            self.input.set_disabled(True)
-            self.messages.outernode.scrollTop = self.messages.outernode.scrollHeight-self.messages.outernode.clientHeight
         else:
             # Runs an interaction.
             self.model.interaction()
@@ -322,8 +340,6 @@ class Chat(flx.Widget):
     def interaction(self):
         # Sends a response to the user.question
         self.textBubble(self.model.response,self.colors['u2'],'start')
-        self.input.set_disabled(False)
-        self.input.set_placeholder_text('')
 
     def textBubble(self, text, color, side):
         """
@@ -343,13 +359,116 @@ class Chat(flx.Widget):
         outernode.style = f'position:relative;display:inline-flex;justify-content:{side};'
         outernode.appendChild(node)
         self.messages.outernode.appendChild(outernode)
+        self.messages.outernode.scrollTop = self.messages.outernode.scrollHeight-self.messages.outernode.clientHeight
+                            
 
+class Data(flx.CanvasWidget):
+    def init(self, model, colors):
+        super().init()
+        self.ctx = self.node.getContext('2d')
+        self.colors = colors
+        self.model = model
+        self.time = 0
 
-class Data(flx.Widget):
-    def init(self, colors):
+        # Starts animation loop.
+        self.update()
 
-        with flx.HSplit(style=f'background-color:{colors["secondary"]}'):
-            pass
+    def update(self):
+        global window
+        ctx = self.ctx
+
+        # Variables
+        width = self.ctx.canvas.width
+        height = self.ctx.canvas.height
+        center = (width / 2, height / 2)
+        radius = center[1]/1.5
+        num_circles = 50
+        sml_radius = radius/num_circles
+
+        if self.model.mode == 'breath':
+            # Draws background.
+            ctx.fillStyle = self.colors["secondary"]
+            ctx.fillRect(0, 0, width, height)
+
+            # Breathing mode.
+            ctx.fillStyle = self.colors["u2"]
+            for x in range(-int(num_circles/2), num_circles-int(num_circles/2)):
+                for y in range(-int(num_circles/2), num_circles-int(num_circles/2)):
+                    if Math.sqrt((2*x*sml_radius)**2 + (2*y*sml_radius)**2) < radius:
+                        if self.time <= 2000:
+                            ctx.beginPath()
+                            ctx.arc(center[0] + 2*x*sml_radius, center[1] + 2*y*sml_radius, (sml_radius * (self.time / 2000)) / 1.2, 0, 6.283185)
+                            ctx.fill()
+                        else:
+                            ctx.beginPath()
+                            ctx.arc(center[0] + 2*x*sml_radius, center[1] + 2*y*sml_radius, (sml_radius * (1 - (self.time - 2000) / 2000)) / 1.2, 0, 6.283185)
+                            ctx.fill()
+        elif self.model.mode == 'calc' and self.time % 60 == 0:
+            # Draws background.
+            ctx.fillStyle = self.colors["secondary"]
+            ctx.fillRect(0, 0, width, height)
+
+            # Calculate mode.
+            ctx.fillStyle = self.colors["u2"]
+            for x in range(-int(num_circles/2), num_circles-int(num_circles/2)):
+                for y in range(-int(num_circles/2), num_circles-int(num_circles/2)):
+                    if Math.sqrt((2*x*sml_radius)**2 + (2*y*sml_radius)**2) < radius:
+                        ctx.beginPath()
+                        ctx.arc(center[0] + 2*x*sml_radius, center[1] + 2*y*sml_radius, (sml_radius * Math.random()) / 1.2, 0, 6.283185)
+                        ctx.fill()
+        elif self.model.mode == 'data':
+            # Draws background.
+            ctx.fillStyle = self.colors["secondary"]
+            ctx.fillRect(0, 0, width, height)
+
+            # Text settings
+            ctx.fillStyle = self.colors["text"]
+            ctx.strokeStyle = self.colors["primary"]
+            ctx.font = '24px serif'
+            ctx.textAlign = 'left'
+            ctx.lineWidth = 4
+            num_rows = len(self.model.table)
+            num_cols = len(self.model.table[0])
+            max_width = [0]*num_cols
+            max_height = 34
+
+            # Caculates the size of the table
+            for row in self.model.table:
+                for i, column in enumerate(row):
+                    metrics = ctx.measureText(column)
+
+                    if metrics.width + 16 > max_width[i]:
+                        max_width[i] = metrics.width + 16
+
+            # Finds table settings.
+            table_width = sum(max_width)
+            table_height = max_height * num_rows
+            cur_width = 0
+
+            # Draws the table.
+            for r in range(num_rows-1):
+                ctx.beginPath()
+                ctx.moveTo(center[0] - table_width / 2, center[1] + (table_height / 2) - (max_height * (r + 1)))  
+                ctx.lineTo(center[0] + table_width / 2, center[1] + (table_height / 2) - (max_height * (r + 1)))
+                ctx.stroke()
+            for c in range(num_cols-1):
+                cur_width += max_width[num_cols-1-c]
+                ctx.beginPath()       
+                ctx.moveTo(center[0] + (table_width / 2) - (cur_width), center[1] + table_height / 2)  
+                ctx.lineTo(center[0] + (table_width / 2) - (cur_width), center[1] - table_height / 2)
+                ctx.stroke()
+
+            # Draws the text
+            for r in range(num_rows):
+                cur_width = 0
+                for c in range(num_cols):
+                    ctx.fillText(self.model.table[r][c], center[0] - (table_width / 2) + cur_width + 8, center[1] - (table_height / 2) + (max_height * (r+1)) - 10)
+                    cur_width += max_width[c]
+
+        # Loops window.
+        self.time += 10
+        self.time %= 4000
+        window.setTimeout(self.update, 10)
 
 
 class DropdownMenu(flx.Widget):
@@ -378,10 +497,14 @@ class DropdownMenu(flx.Widget):
                     'style': "list-style:none;padding:0.5rem;border-radius:0.5rem;",
                     'onmouseover': self.hover_on,
                     'onmouseleave': self.hover_off,
-                    'onclick': self.func
+                    'onclick': self.click
                 }, option) for option in self.options]
             )
         )
+
+    def click(self):
+        self.func()
+        self.hide_display()
 
     def hover_on(self):
         global window
@@ -412,25 +535,12 @@ class DropdownMenu(flx.Widget):
 class Edit_SQL(flx.PyComponent):
     question = flx.StringProp('', settable=True)
     response = flx.StringProp('', settable=True)
+    mode = flx.StringProp('breath', settable=True)
+    table = flx.ListProp([], settable=True)
 
     def init(self):
         # The interface.
-
-        # model loading
-        model = SchemaInteractionATISModel(
-            params,
-            data.input_vocabulary,
-            data.output_vocabulary,
-            data.output_vocabulary_schema,
-            None)
-        model.load(os.path.join("EditSQL/logs_clean/logs_spider_editsql_10p", "model_best.pt"))
-        model = model.to(device)
-        self.lang='en'
-        self.question_generator = QuestionGenerator(bool_structure_question=True, lang='en')
-        error_detector = ErrorDetectorProbability(0.995)
-        world_model = WorldModel(model, 3, None, 1, 0.0,
-                                bool_structure_question=True)
-        self.agent = Agent(world_model, error_detector, self.question_generator,
+        self.agent = Agent(world_model, error_detector, question_generator,
                     bool_mistake_exit=False,
                     bool_structure_question=True,
                     set_text=self.set_text)
@@ -438,8 +548,6 @@ class Edit_SQL(flx.PyComponent):
         # environment setup: user simulator
         error_evaluator = ErrorEvaluator()
         self.user = UserSim(error_evaluator, set_text=self.set_text, lang='en', bool_structure_question=params.ask_structure)
-
-        self.raw_valid_examples = json.load(open(os.path.join(params.raw_data_directory, "dev_reordered.json")))
 
         # Shows client interface.
         Menu(self, coulors)
@@ -481,12 +589,21 @@ class Edit_SQL(flx.PyComponent):
             q = ''
             for l in value:
                 q += l
-                self.set_question(q)
-                time.sleep(random.uniform(0.2, 0.1))
-            time.sleep(1)
+                self.set_question(q.strip())
+                time.sleep(random.uniform(0.1, 0.05))
+            self.set_question(q.strip() + '\t')
+
+            # Shows AI thinking
+            self.set_mode('calc')
         else:
-            self.set_response(value)
-            time.sleep(1)
+            if self.response == value:
+                self.set_response(value + '\n')
+            else:
+                self.set_response(value)
+
+            # Shows AI chilling
+            self.set_mode('breath')
+        time.sleep(1)
 
     @flx.action
     def set_theme(self, theme):
@@ -494,22 +611,23 @@ class Edit_SQL(flx.PyComponent):
         coulors = themes[theme]
 
     @flx.action
-    def set_lang(self, lang):
-        self.user.set_lang(lang)
-        self.question_generator.set_lang(lang)
-        self.lang=lang
+    def set_lang(self, lng):
+        global lang
+        self.user.set_lang(lng)
+        question_generator.set_lang(lng)
+        lang=lng
 
     @flx.action
     def interaction(self):
         """ Evaluates a sample of interactions. """
         # Gets the data
-        self.reorganized_data = list(zip(self.raw_valid_examples, data.get_all_interactions(data.valid_data)))
+        self.reorganized_data = list(zip(raw_valid_examples, data.get_all_interactions(data.valid_data)))
         random.shuffle(self.reorganized_data)
         (raw_example, example) = self.reorganized_data[1]
         # Sets the question
-        question = ' '.join(example.interaction.utterances[0].original_input_seq) +'\n'
+        question = ' '.join(example.interaction.utterances[0].original_input_seq)
         
-        question_op = GoogleTranslator(source='auto', target=self.lang).translate(question) +'\n'
+        question_op = GoogleTranslator(source='auto', target=lang).translate(question)
         self.set_text('q', question_op)
 
         max_generation_length = 100
@@ -558,14 +676,45 @@ class Edit_SQL(flx.PyComponent):
                 sequence = hyp.sql
                 probability = np.exp(hyp.logprob)
 
-            flat_sequence = example.flatten_sequence(sequence)
             sys.stdout.flush()
-            print('\n')
-            print(flat_sequence)
-            working_text='Working on it!' + '\n'
-            working_text_op = GoogleTranslator(source='auto', target=self.lang).translate(working_text)+ '\n'
-            self.set_text('r', working_text_op)
 
+        # Connect to database.
+        try:
+            conn = sqlite3.connect(os.path.join(os.getcwd(), f'EditSQL/data_clean/database/{raw_example["db_id"]}/{raw_example["db_id"]}.sqlite'))
+        except:
+            quit()
+
+        # Gets the data
+        cur = conn.cursor()
+        cur.execute(raw_example['query'])
+
+        # Prints the data
+        rows = cur.fetchall()
+
+        if len(rows) == 0:
+            no_res = 'Unfortanatly, there were no resluts.'
+            no_res = GoogleTranslator(source='auto', target=lang).translate(no_res)
+            self.set_text('r', no_res)
+            self.set_mode('breath')
+        elif len(rows) == 1:
+            line = str(cur.description[0][0]) + ': ' + str(rows[0])
+            line = line.translate({ord(c): None for c in '@#^&*-()'})
+            line = line.translate({ord(c): ' ' for c in '_'})
+            line = GoogleTranslator(source='auto', target=lang).translate(line)
+            self.set_text('r', line)
+            self.set_mode('breath')
+        else:
+            table = []
+            table.append(tuple([GoogleTranslator(source='auto', target=lang).translate(description[0].translate({ord(c): ' ' for c in '_'}).translate({ord(c): None for c in '@#^&*-()'}).title()) for description in cur.description]))
+            for row in rows:
+                table.append(row)
+            line = 'Displaying data on the right.'
+            line = GoogleTranslator(source='auto', target=lang).translate(line)
+            self.set_text('r', line)
+            self.set_table(table)
+            self.set_mode('data')
+
+        
 # Runs the interface as a desktop app.
 if __name__ == "__main__":
     # App
